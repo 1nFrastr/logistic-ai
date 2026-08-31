@@ -84,6 +84,17 @@ function forecastValues(method: ForecastMethod, history: number[], horizon: numb
   return exponentialSmoothing(history, horizon);
 }
 
+function metricNoun(metric: ForecastMetric): { series: string; stock: string } {
+  switch (metric) {
+    case "orders":
+      return { series: "orders", stock: "orders" };
+    case "revenue":
+      return { series: "revenue (USD)", stock: "USD" };
+    default:
+      return { series: "units", stock: "units" };
+  }
+}
+
 function methodologyText(method: ForecastMethod): string {
   switch (method) {
     case "moving_average":
@@ -138,6 +149,7 @@ export function runForecast(query: ForecastQuery): ForecastResult {
 
   const forecastSum = round(forecast.reduce((sum, value) => sum + value, 0));
   const recommendedUnits = Math.ceil(forecastSum * (1 + safetyStockPct));
+  const nouns = metricNoun(metric);
   const subject =
     dimension === "overall"
       ? "all SKUs"
@@ -148,10 +160,17 @@ export function runForecast(query: ForecastQuery): ForecastResult {
       `Only ${history.length} historical month(s) matched this slice. Forecast uncertainty is high; consider aggregating by category.`,
     );
   }
+  if (metric === "orders") {
+    warnings.push(
+      "This forecast is order count, not shipped units. Demand and inventory questions should omit metric or use quantity.",
+    );
+  } else if (metric === "revenue") {
+    warnings.push("This forecast is revenue, not shipped units. Inventory planning should use metric=quantity.");
+  }
 
   const chart: ChartSpec = {
     type: "line",
-    title: `Demand forecast — ${subject}`,
+    title: `Demand forecast (${nouns.series}) — ${subject}`,
     xKey: "month",
     xLabel: "month",
     series: [
@@ -173,13 +192,18 @@ export function runForecast(query: ForecastQuery): ForecastResult {
     recommendedUnits,
     safetyStockPct,
     forecastSum,
-    rationale: `Cover the ${horizon}-month forecasted ${metric} (${forecastSum}) plus a ${Math.round(safetyStockPct * 100)}% buffer for delay and demand variance.`,
+    rationale:
+      metric === "quantity"
+        ? `Cover the ${horizon}-month forecasted demand of ${forecastSum} units plus a ${Math.round(safetyStockPct * 100)}% buffer for delay and demand variance.`
+        : `Cover the ${horizon}-month forecasted ${nouns.series} (${forecastSum}) plus a ${Math.round(safetyStockPct * 100)}% buffer. This is not an inventory-unit recommendation.`,
   };
 
   const answer =
     rows.length === 0
       ? `No historical rows matched ${subject} in ${rangeLabel}, so the forecast is zero.`
-      : `Forecasted ${metric} for ${subject} over the next ${horizon} months is ${forecastSum}. Recommended inventory to plan: ${recommendedUnits} units.`;
+      : metric === "quantity"
+        ? `Forecasted demand for ${subject} over the next ${horizon} months is ${forecastSum} units. Recommended inventory to plan: ${recommendedUnits} units.`
+        : `Forecasted ${nouns.series} for ${subject} over the next ${horizon} months is ${forecastSum}. Buffered ${nouns.stock} to plan: ${recommendedUnits}. This is not shipped-unit inventory.`;
 
   const queryPlan: QueryPlan = {
     tool: "forecastDemand",

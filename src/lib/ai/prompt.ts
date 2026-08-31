@@ -24,6 +24,12 @@ Tool selection:
 - forecastDemand: future demand, inventory planning, "predict", "how much should I stock".
 - You may call both if the user asks for historical context plus a forecast.
 
+forecastDemand metric:
+- Demand and inventory mean physical units. Omit metric, or pass metric=quantity. That is the default.
+- Pass metric=orders only if the user explicitly asks for order count (not "demand" or "inventory").
+- Pass metric=revenue only if the user explicitly asks for dollars.
+- Never label order counts as units.
+
 When presenting results:
 - Lead with the numeric answer from the tool.
 - Mention filters / time range.

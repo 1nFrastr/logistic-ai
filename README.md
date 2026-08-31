@@ -32,6 +32,19 @@ pnpm dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
+### Eval the analyst
+
+Runs the same model, system prompt, and tools as `POST /api/chat`, then scores routing and resolved metrics.
+
+```bash
+pnpm eval
+pnpm eval -- --list
+pnpm eval -- --id paper-demand-4m
+pnpm eval -- --prompt "Predict demand for PAPER for the next 4 months"
+```
+
+Traces are written to `eval/results/` (gitignored). Cases live in `eval/cases.ts`.
+
 ### Environment variables
 
 | Name | Required | Description |
@@ -109,7 +122,8 @@ Ambiguous SKUs / carriers are resolved with exact-then-contains matching; the to
 - On-time rate uses completed shipments only (`delivered` + `delayed`).
 - Time filters apply to `order_date`.
 - SKU-level history is sparse (355 SKUs / 400 orders). Forecasting a single SKU is supported but noisy; category / overall forecasts are more stable.
-- Default forecast is exponential smoothing with a damped trend, plus a 20% inventory buffer. Moving average and linear regression are available via the tool schema.
+- Demand and inventory forecasts default to `quantity` (shipped units). Order count is only used when the user explicitly asks for orders.
+- Default forecast method is exponential smoothing with a damped trend, plus a 20% inventory buffer. Moving average and linear regression are available via the tool schema.
 - No authentication. Reviewers can open the deployed URL directly.
 
 ## Limitations

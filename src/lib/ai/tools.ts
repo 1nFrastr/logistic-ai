@@ -63,11 +63,16 @@ export const analyticsTools = {
   }),
   forecastDemand: tool({
     description:
-      "Forecast future monthly demand from historical orders and recommend inventory. Use for predict / plan / stock questions.",
+      "Forecast future monthly demand and recommend inventory. Demand / stock / predict questions use quantity (shipped units). Do not pass metric=orders unless the user asked for order count.",
     inputSchema: z.object({
       dimension: z.enum(["overall", "sku", "category", "region", "warehouse"]),
       key: z.string().optional().describe("SKU, category, region, or warehouse value when dimension is not overall"),
-      metric: z.enum(["orders", "quantity", "revenue"]).optional(),
+      metric: z
+        .enum(["orders", "quantity", "revenue"])
+        .optional()
+        .describe(
+          "quantity = shipped units (default; use for demand and inventory). orders = order count (only if asked). revenue = USD.",
+        ),
       horizonMonths: z.number().int().min(1).max(6).optional(),
       method: z.enum(["moving_average", "linear_regression", "exponential_smoothing"]).optional(),
       safetyStockPct: z.number().min(0).max(1).optional(),
