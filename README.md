@@ -2,6 +2,8 @@
 
 AI-powered analytics dashboard for the Spaceship Senior Engineer code test.
 
+**Live app:** [https://logistic-ai-freddyx.vercel.app](https://logistic-ai-freddyx.vercel.app)
+
 The app has two surfaces on one dataset:
 
 - A traditional operations dashboard (KPIs + charts)
@@ -55,10 +57,9 @@ No other secrets are needed. Do not commit `.env.local`.
 
 ### Deploy on Vercel
 
-1. Push this repository to GitHub / GitLab / Bitbucket.
-2. Import the project in Vercel (framework preset: Next.js, install command: `pnpm install`).
-3. Add `AI_GATEWAY_API_KEY` in Project Settings → Environment Variables, or enable AI Gateway for the project.
-4. Deploy.
+Production is already live at [https://logistic-ai-freddyx.vercel.app](https://logistic-ai-freddyx.vercel.app). The GitHub repo `1nFrastr/logistic-ai` is connected to the Vercel project `freddyx/logistic-ai`, so pushes to `main` deploy automatically.
+
+To recreate elsewhere: import the GitHub repo in Vercel (framework preset: Next.js, install command: `pnpm install`), add `AI_GATEWAY_API_KEY`, and deploy.
 
 Model used: `deepseek/deepseek-v4-flash` via the Vercel AI Gateway (AI SDK string provider).
 
